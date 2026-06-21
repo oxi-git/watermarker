@@ -377,10 +377,10 @@ input[type="color"]:hover {
 }
 
 .btn-primary {
-  background: var(--gradient);
+  background: #667eea;
   color: #fff;
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-  border-color: var(--accent);
+  border-color: #667eea;
 }
 
 .btn-primary:hover:not(:disabled) {
