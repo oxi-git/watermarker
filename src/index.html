@@ -9,7 +9,14 @@
 <body>
 
 <div id="sidebar">
-  <h1>Watermarker</h1>
+  <div id="sidebar-header">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1>Watermarker</h1>
+      <button id="theme-toggle" class="theme-btn" title="Toggle light/dark">
+        <span class="theme-icon">🌙</span>
+      </button>
+    </div>
+  </div>
 
   <div id="dropzone" onclick="document.getElementById('wmimg').click()">
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px">

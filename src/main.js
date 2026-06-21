@@ -2,6 +2,33 @@ import JSZip from 'jszip';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 
+// ── Theme Toggle ───────────────────────────────────────────
+function initializeTheme() {
+  const html = document.documentElement;
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  html.setAttribute('data-theme', savedTheme);
+  updateThemeIcon(savedTheme);
+}
+
+function updateThemeIcon(theme) {
+  const icon = document.querySelector('.theme-icon');
+  if (icon) {
+    icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+}
+
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const html = document.documentElement;
+  const currentTheme = html.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeIcon(newTheme);
+});
+
+initializeTheme();
+
 // ── State ──────────────────────────────────────────────────
 const files = [];       // [{file, name, img, thumbCanvas, thumbCtx}]
 let mode = 'empty';     // 'empty' | 'grid' | 'preview'
