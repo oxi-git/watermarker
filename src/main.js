@@ -4,11 +4,21 @@ import { writeFile } from '@tauri-apps/plugin-fs';
 import { initI18n, setLanguage, getLanguage, t, getWord, langs, langNames } from './i18n';
 
 // ── Initialization ─────────────────────────────────────────
-(async () => {
-  await initI18n();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
+
+async function initializeApp() {
+  try {
+    await initI18n();
+  } catch (e) {
+    console.error('Failed to initialize i18n:', e);
+  }
   initializeTheme();
   initializeLanguage();
-})();
+}
 
 // ── Theme Toggle ───────────────────────────────────────────
 function initializeTheme() {
@@ -38,6 +48,11 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 // ── Language Toggle ────────────────────────────────────────
 function initializeLanguage() {
   const langBtn = document.getElementById('lang-toggle');
+  if (!langBtn) {
+    console.error('lang-toggle button not found');
+    return;
+  }
+
   updateLanguageButton();
 
   langBtn.addEventListener('click', () => {
@@ -45,12 +60,14 @@ function initializeLanguage() {
     const newLang = currentLang === 'it' ? 'en' : 'it';
     setLanguage(newLang);
     updateLanguageButton();
-    updateFileListCount(); // Refresh count with new language
+    updateFileListCount();
   });
 }
 
 function updateLanguageButton() {
   const langBtn = document.getElementById('lang-toggle');
+  if (!langBtn) return;
+
   const current = getLanguage();
   langBtn.textContent = current === 'it' ? 'EN' : 'IT';
   langBtn.title = `Switch to ${langNames[current === 'it' ? 'en' : 'it']}`;

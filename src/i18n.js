@@ -4,15 +4,29 @@ let translations = {};
 
 export async function initI18n() {
   try {
-    const [itData, enData] = await Promise.all([
-      fetch('/locales/it.json').then(r => r.json()),
-      fetch('/locales/en.json').then(r => r.json()),
+    console.log('Loading translations...');
+    const [itRes, enRes] = await Promise.all([
+      fetch('/locales/it.json'),
+      fetch('/locales/en.json'),
     ]);
+
+    if (!itRes.ok || !enRes.ok) {
+      throw new Error(`Failed to fetch: IT ${itRes.status}, EN ${enRes.status}`);
+    }
+
+    const [itData, enData] = await Promise.all([
+      itRes.json(),
+      enRes.json(),
+    ]);
+
     translations = { it: itData, en: enData };
+    console.log('Translations loaded successfully:', Object.keys(translations));
     applyLanguage(currentLang);
+    console.log('Applied language:', currentLang);
     return currentLang;
   } catch (e) {
     console.error('Failed to load translations:', e);
+    // Fallback: translations remain empty but app doesn't crash
   }
 }
 
