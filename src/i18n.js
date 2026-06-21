@@ -54,16 +54,28 @@ export function getLanguage() {
 }
 
 function applyLanguage(lang) {
+  console.log('[i18n] applyLanguage called with:', lang);
+
   // Update all elements with data-i18n attribute
-  document.querySelectorAll('[data-i18n]').forEach(el => {
+  const i18nElements = document.querySelectorAll('[data-i18n]');
+  console.log('[i18n] Found', i18nElements.length, 'elements with data-i18n');
+
+  i18nElements.forEach(el => {
     const key = el.getAttribute('data-i18n');
-    el.textContent = t(key);
+    const text = t(key);
+    console.log(`[i18n] Updating "${key}" →`, text);
+    el.textContent = text;
   });
 
   // Update all elements with data-i18n-placeholder attribute
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+  const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+  console.log('[i18n] Found', placeholderElements.length, 'elements with data-i18n-placeholder');
+
+  placeholderElements.forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    el.placeholder = t(key);
+    const text = t(key);
+    console.log(`[i18n] Updating placeholder "${key}" →`, text);
+    el.placeholder = text;
   });
 }
 
