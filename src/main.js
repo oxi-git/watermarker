@@ -11,13 +11,17 @@ if (document.readyState === 'loading') {
 }
 
 async function initializeApp() {
+  console.log('Initializing app...');
   try {
     await initI18n();
+    console.log('i18n initialized');
   } catch (e) {
     console.error('Failed to initialize i18n:', e);
   }
   initializeTheme();
+  console.log('Theme initialized');
   initializeLanguage();
+  console.log('Language initialized');
 }
 
 // ── Theme Toggle ───────────────────────────────────────────
@@ -47,21 +51,30 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 
 // ── Language Toggle ────────────────────────────────────────
 function initializeLanguage() {
+  console.log('Initializing language toggle...');
   const langBtn = document.getElementById('lang-toggle');
+  console.log('lang-toggle button:', langBtn);
+
   if (!langBtn) {
-    console.error('lang-toggle button not found');
+    console.error('lang-toggle button not found in DOM');
+    console.log('Available elements:', document.body.innerHTML.substring(0, 500));
     return;
   }
 
   updateLanguageButton();
+  console.log('Language button updated');
 
   langBtn.addEventListener('click', () => {
+    console.log('Language button clicked!');
     const currentLang = getLanguage();
+    console.log('Current language:', currentLang);
     const newLang = currentLang === 'it' ? 'en' : 'it';
+    console.log('Switching to:', newLang);
     setLanguage(newLang);
     updateLanguageButton();
     updateFileListCount();
   });
+  console.log('Language toggle listener attached');
 }
 
 function updateLanguageButton() {
