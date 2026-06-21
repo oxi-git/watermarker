@@ -19,6 +19,8 @@ jobs:
           cache: npm
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -46,16 +48,16 @@ jobs:
           PYEOF
           npx tauri icon src-tauri/icons/icon.png
 
-      - name: Build app
-        run: npx tauri build --bundles app,dmg
+      - name: Build app (universal — Intel + Apple Silicon)
+        run: npx tauri build --target universal-apple-darwin --bundles app,dmg
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: watermarker-macos
           path: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/Watermarker.app
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/Watermarker.app
           retention-days: 14
 
   # ── Linux: produce AppImage e .deb ────────────────────────
