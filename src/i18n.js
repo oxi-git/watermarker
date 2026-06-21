@@ -2,20 +2,11 @@
 import itMessages from './locales/it.json';
 import enMessages from './locales/en.json';
 
-console.log('[i18n] Import check:');
-console.log('[i18n] itMessages type:', typeof itMessages, 'keys:', Object.keys(itMessages).slice(0, 5));
-console.log('[i18n] enMessages type:', typeof enMessages, 'keys:', Object.keys(enMessages).slice(0, 5));
-
 let currentLang = localStorage.getItem('language') || (navigator.language.startsWith('en') ? 'en' : 'it');
 let translations = { it: itMessages, en: enMessages };
-console.log('[i18n] translations initialized:', Object.keys(translations), 'it keys:', Object.keys(translations.it).length);
 
 export async function initI18n() {
-  console.log('[i18n] Initializing with translations:', Object.keys(translations));
-  console.log('[i18n] IT keys:', Object.keys(translations.it).length);
-  console.log('[i18n] EN keys:', Object.keys(translations.en).length);
   applyLanguage(currentLang);
-  console.log('[i18n] Applied language:', currentLang);
   return currentLang;
 }
 
@@ -40,20 +31,10 @@ export function getWord(key) {
 }
 
 export function setLanguage(lang) {
-  console.log('[i18n] setLanguage called with:', lang);
-  console.log('[i18n] Available translations:', Object.keys(translations));
-  console.log('[i18n] translations[lang] exists?', !!translations[lang]);
-
-  if (!translations[lang]) {
-    console.warn(`[i18n] No translations for language: ${lang}`);
-    return;
-  }
-
-  console.log('[i18n] Switching language to:', lang);
+  if (!translations[lang]) return;
   currentLang = lang;
   localStorage.setItem('language', lang);
   applyLanguage(lang);
-  console.log('[i18n] Language switched successfully');
 }
 
 export function getLanguage() {
@@ -61,28 +42,16 @@ export function getLanguage() {
 }
 
 function applyLanguage(lang) {
-  console.log('[i18n] applyLanguage called with:', lang);
-
   // Update all elements with data-i18n attribute
-  const i18nElements = document.querySelectorAll('[data-i18n]');
-  console.log('[i18n] Found', i18nElements.length, 'elements with data-i18n');
-
-  i18nElements.forEach(el => {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    const text = t(key);
-    console.log(`[i18n] Updating "${key}" →`, text);
-    el.textContent = text;
+    el.textContent = t(key);
   });
 
   // Update all elements with data-i18n-placeholder attribute
-  const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
-  console.log('[i18n] Found', placeholderElements.length, 'elements with data-i18n-placeholder');
-
-  placeholderElements.forEach(el => {
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    const text = t(key);
-    console.log(`[i18n] Updating placeholder "${key}" →`, text);
-    el.placeholder = text;
+    el.placeholder = t(key);
   });
 }
 
