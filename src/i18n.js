@@ -2,8 +2,13 @@
 import itMessages from './locales/it.json';
 import enMessages from './locales/en.json';
 
+console.log('[i18n] Import check:');
+console.log('[i18n] itMessages type:', typeof itMessages, 'keys:', Object.keys(itMessages).slice(0, 5));
+console.log('[i18n] enMessages type:', typeof enMessages, 'keys:', Object.keys(enMessages).slice(0, 5));
+
 let currentLang = localStorage.getItem('language') || (navigator.language.startsWith('en') ? 'en' : 'it');
 let translations = { it: itMessages, en: enMessages };
+console.log('[i18n] translations initialized:', Object.keys(translations), 'it keys:', Object.keys(translations.it).length);
 
 export async function initI18n() {
   console.log('[i18n] Initializing with translations:', Object.keys(translations));
@@ -16,10 +21,9 @@ export async function initI18n() {
 
 export function t(key, vars = {}) {
   const lang = translations[currentLang] || translations.it;
-  console.log(`[t] key="${key}", currentLang="${currentLang}", lang keys:`, Object.keys(lang).slice(0, 3));
 
-  let text = key.split('.').reduce((obj, k) => obj?.[k], lang) || key;
-  console.log(`[t] result="${text}"`);
+  // JSON keys are flat (e.g., "app.title"), not nested (e.g., app.title)
+  let text = lang[key] || key;
 
   // Simple variable substitution: {varName} → value
   Object.entries(vars).forEach(([k, v]) => {
