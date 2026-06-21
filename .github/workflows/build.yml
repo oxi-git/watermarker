@@ -34,24 +34,11 @@ jobs:
       - name: Installa dipendenze
         run: npm ci
 
-      - name: Genera icone placeholder
+      - name: Genera icone da SVG
         run: |
           mkdir -p src-tauri/icons
-          python3 - <<'PYEOF'
-          import struct, zlib
-          def make_png(w, h, r, g, b):
-              row  = b'\x00' + bytes([r, g, b]) * w
-              raw  = row * h
-              idat = zlib.compress(raw, 9)
-              def chunk(tag, data):
-                  body = tag + data
-                  return struct.pack('>I', len(data)) + body + struct.pack('>I', zlib.crc32(body) & 0xffffffff)
-              ihdr = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
-              return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', idat) + chunk(b'IEND', b'')
-          with open('src-tauri/icons/icon.png', 'wb') as f:
-              f.write(make_png(512, 512, 102, 126, 234))
-          PYEOF
-          npx tauri icon src-tauri/icons/icon.png
+          cp watermarker-logo.svg src-tauri/icons/icon.svg
+          npx tauri icon src-tauri/icons/icon.svg
 
       - name: Build app (universal — Intel + Apple Silicon)
         run: npx tauri build --target universal-apple-darwin --bundles dmg
@@ -100,24 +87,11 @@ jobs:
       - name: Installa dipendenze
         run: npm ci
 
-      - name: Genera icone placeholder
+      - name: Genera icone da SVG
         run: |
           mkdir -p src-tauri/icons
-          python3 - <<'PYEOF'
-          import struct, zlib
-          def make_png(w, h, r, g, b):
-              row  = b'\x00' + bytes([r, g, b]) * w
-              raw  = row * h
-              idat = zlib.compress(raw, 9)
-              def chunk(tag, data):
-                  body = tag + data
-                  return struct.pack('>I', len(data)) + body + struct.pack('>I', zlib.crc32(body) & 0xffffffff)
-              ihdr = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
-              return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', idat) + chunk(b'IEND', b'')
-          with open('src-tauri/icons/icon.png', 'wb') as f:
-              f.write(make_png(512, 512, 102, 126, 234))
-          PYEOF
-          npx tauri icon src-tauri/icons/icon.png
+          cp watermarker-logo.svg src-tauri/icons/icon.svg
+          npx tauri icon src-tauri/icons/icon.svg
 
       - name: Build app
         run: npx tauri build --bundles appimage,deb
@@ -160,25 +134,13 @@ jobs:
       - name: Installa dipendenze
         run: npm ci
 
-      - name: Genera icone placeholder
-        shell: python
+      - name: Prepara icone da SVG
         run: |
-          import struct, zlib, os
-          os.makedirs('src-tauri/icons', exist_ok=True)
-          def make_png(w, h, r, g, b):
-              row  = b'\x00' + bytes([r, g, b]) * w
-              raw  = row * h
-              idat = zlib.compress(raw, 9)
-              def chunk(tag, data):
-                  body = tag + data
-                  return struct.pack('>I', len(data)) + body + struct.pack('>I', zlib.crc32(body) & 0xffffffff)
-              ihdr = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
-              return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', idat) + chunk(b'IEND', b'')
-          with open('src-tauri/icons/icon.png', 'wb') as f:
-              f.write(make_png(512, 512, 102, 126, 234))
+          mkdir -p src-tauri/icons
+          copy watermarker-logo.svg src-tauri/icons/icon.svg
 
       - name: Genera icone Tauri
-        run: npx tauri icon src-tauri/icons/icon.png
+        run: npx tauri icon src-tauri/icons/icon.svg
 
       - name: Build app
         run: npx tauri build --bundles msi,nsis
