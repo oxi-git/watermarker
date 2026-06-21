@@ -1,0 +1,47 @@
+{
+  "app.title": "Watermarker",
+  "app.addMore": "+ Add more images",
+  "app.dragDrop": "Click or drag images",
+  "app.formats": "JPG · PNG · WEBP · multiple files at once",
+  "app.image_one": "1 image",
+  "app.image_many": "images",
+  "app.removeAll": "Remove all",
+  "app.selectImage": "Select an image to start",
+
+  "watermark.title": "Watermark text",
+  "watermark.line1": "Line 1",
+  "watermark.line2": "Line 2",
+  "watermark.line3": "Line 3",
+  "watermark.line1Placeholder": "2024-01-15 · COPY FOR XYZ Inc",
+  "watermark.line2Placeholder": "PRODUCT ABC PURCHASE",
+
+  "style.title": "Style",
+  "style.font": "Font",
+  "style.size": "Text size",
+  "style.sizeUnit": "% of diagonal",
+  "style.color": "Color",
+  "style.colorLabel": "Watermark text color",
+  "style.opacity": "Opacity",
+
+  "layout.title": "Layout",
+  "layout.rotation": "Rotation",
+  "layout.spacingX": "Horizontal spacing",
+  "layout.spacingXUnit": "% width",
+  "layout.spacingY": "Vertical spacing",
+  "layout.spacingYUnit": "% height",
+
+  "download.title": "Download selected",
+  "download.allTitle": "Download all",
+  "download.png": "PNG",
+  "download.jpg": "JPG",
+  "download.zipPng": "ZIP PNG",
+  "download.zipJpg": "ZIP JPG",
+  "download.processing": "Processing {current} / {total}: {name}",
+  "download.creating": "Creating ZIP…",
+  "download.back": "← Grid",
+  "download.prev": "‹ Prev",
+  "download.next": "Next ›",
+
+  "grid.title": "Grid",
+  "preview.title": "Preview"
+}

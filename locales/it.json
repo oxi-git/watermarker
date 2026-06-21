@@ -1,0 +1,47 @@
+{
+  "app.title": "Watermarker",
+  "app.addMore": "+ Aggiungi altre immagini",
+  "app.dragDrop": "Clicca o trascina le immagini",
+  "app.formats": "JPG · PNG · WEBP · più file contemporaneamente",
+  "app.image_one": "1 immagine",
+  "app.image_many": "immagini",
+  "app.removeAll": "Rimuovi tutto",
+  "app.selectImage": "Seleziona un'immagine per iniziare",
+
+  "watermark.title": "Testo filigrana",
+  "watermark.line1": "Linea 1",
+  "watermark.line2": "Linea 2",
+  "watermark.line3": "Linea 3",
+  "watermark.line1Placeholder": "2024-01-15 · COPIA PER XYZ srl",
+  "watermark.line2Placeholder": "ACQUISTO PRODOTTO ABC",
+
+  "style.title": "Stile",
+  "style.font": "Font",
+  "style.size": "Dimensione testo",
+  "style.sizeUnit": "% della diagonale",
+  "style.color": "Colore",
+  "style.colorLabel": "Colore testo filigrana",
+  "style.opacity": "Opacità",
+
+  "layout.title": "Disposizione",
+  "layout.rotation": "Rotazione",
+  "layout.spacingX": "Spaziatura orizzontale",
+  "layout.spacingXUnit": "% larghezza",
+  "layout.spacingY": "Spaziatura verticale",
+  "layout.spacingYUnit": "% altezza",
+
+  "download.title": "Scarica selezionato",
+  "download.allTitle": "Scarica tutti",
+  "download.png": "PNG",
+  "download.jpg": "JPG",
+  "download.zipPng": "ZIP PNG",
+  "download.zipJpg": "ZIP JPG",
+  "download.processing": "Elaborazione {current} / {total}: {name}",
+  "download.creating": "Creazione ZIP…",
+  "download.back": "← Griglia",
+  "download.prev": "‹ Prec",
+  "download.next": "Succ ›",
+
+  "grid.title": "Griglia",
+  "preview.title": "Anteprima"
+}

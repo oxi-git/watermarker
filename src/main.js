@@ -1,6 +1,14 @@
 import JSZip from 'jszip';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
+import { initI18n, setLanguage, getLanguage, t, getWord, langs, langNames } from './i18n';
+
+// ── Initialization ─────────────────────────────────────────
+(async () => {
+  await initI18n();
+  initializeTheme();
+  initializeLanguage();
+})();
 
 // ── Theme Toggle ───────────────────────────────────────────
 function initializeTheme() {
@@ -27,7 +35,26 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
   updateThemeIcon(newTheme);
 });
 
-initializeTheme();
+// ── Language Toggle ────────────────────────────────────────
+function initializeLanguage() {
+  const langBtn = document.getElementById('lang-toggle');
+  updateLanguageButton();
+
+  langBtn.addEventListener('click', () => {
+    const currentLang = getLanguage();
+    const newLang = currentLang === 'it' ? 'en' : 'it';
+    setLanguage(newLang);
+    updateLanguageButton();
+    updateFileListCount(); // Refresh count with new language
+  });
+}
+
+function updateLanguageButton() {
+  const langBtn = document.getElementById('lang-toggle');
+  const current = getLanguage();
+  langBtn.textContent = current === 'it' ? 'EN' : 'IT';
+  langBtn.title = `Switch to ${langNames[current === 'it' ? 'en' : 'it']}`;
+}
 
 // ── State ──────────────────────────────────────────────────
 const files = [];       // [{file, name, img, thumbCanvas, thumbCtx}]
@@ -66,13 +93,19 @@ function loadFile(file) {
 }
 
 // ── Sidebar ────────────────────────────────────────────────
+function updateFileListCount() {
+  const countEl = document.getElementById('filelist-count');
+  const count = files.length;
+  const text = count === 1 ? getWord('app.image_one') : `${count} ${getWord('app.image_many')}`;
+  countEl.textContent = text;
+}
+
 function updateSidebar() {
   const section = document.getElementById('filelist-section');
-  const countEl = document.getElementById('filelist-count');
   const listEl  = document.getElementById('filelist');
 
   section.style.display = files.length ? '' : 'none';
-  countEl.textContent   = files.length === 1 ? '1 immagine' : `${files.length} immagini`;
+  updateFileListCount();
 
   dropzone.classList.toggle('compact', files.length > 0);
   dropzone.innerHTML = files.length > 0
@@ -333,7 +366,7 @@ window.downloadZip = async function (format) {
   const ext    = format === 'png' ? 'png' : 'jpg';
 
   for (let i = 0; i < files.length; i++) {
-    lbl.textContent = `Elaborazione ${i + 1} / ${files.length}: ${files[i].name}`;
+    lbl.textContent = t('download.processing', { current: i + 1, total: files.length, name: files[i].name });
     bar.style.width = (i / files.length * 100) + '%';
     await new Promise(r => setTimeout(r, 0));
 
@@ -344,7 +377,7 @@ window.downloadZip = async function (format) {
   }
 
   bar.style.width = '100%';
-  lbl.textContent = 'Creazione ZIP…';
+  lbl.textContent = t('download.creating');
 
   const zipBytes = await zip.generateAsync({ type: 'uint8array' }, meta => {
     bar.style.width = meta.percent.toFixed(0) + '%';
