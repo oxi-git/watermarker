@@ -49,10 +49,20 @@ export function getWord(key) {
 }
 
 export function setLanguage(lang) {
-  if (!translations[lang]) return;
+  console.log('[i18n] setLanguage called with:', lang);
+  console.log('[i18n] Available translations:', Object.keys(translations));
+  console.log('[i18n] translations[lang] exists?', !!translations[lang]);
+
+  if (!translations[lang]) {
+    console.warn(`[i18n] No translations for language: ${lang}`);
+    return;
+  }
+
+  console.log('[i18n] Switching language to:', lang);
   currentLang = lang;
   localStorage.setItem('language', lang);
   applyLanguage(lang);
+  console.log('[i18n] Language switched successfully');
 }
 
 export function getLanguage() {
