@@ -1,6 +1,6 @@
 // Simple i18n system
-import itMessages from '../public/locales/it.json';
-import enMessages from '../public/locales/en.json';
+import itMessages from './locales/it.json';
+import enMessages from './locales/en.json';
 
 let currentLang = localStorage.getItem('language') || (navigator.language.startsWith('en') ? 'en' : 'it');
 let translations = { it: itMessages, en: enMessages };
