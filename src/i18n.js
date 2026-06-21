@@ -1,33 +1,17 @@
 // Simple i18n system
+import itMessages from '../public/locales/it.json';
+import enMessages from '../public/locales/en.json';
+
 let currentLang = localStorage.getItem('language') || (navigator.language.startsWith('en') ? 'en' : 'it');
-let translations = {};
+let translations = { it: itMessages, en: enMessages };
 
 export async function initI18n() {
-  try {
-    console.log('Loading translations...');
-    const [itRes, enRes] = await Promise.all([
-      fetch('/locales/it.json'),
-      fetch('/locales/en.json'),
-    ]);
-
-    if (!itRes.ok || !enRes.ok) {
-      throw new Error(`Failed to fetch: IT ${itRes.status}, EN ${enRes.status}`);
-    }
-
-    const [itData, enData] = await Promise.all([
-      itRes.json(),
-      enRes.json(),
-    ]);
-
-    translations = { it: itData, en: enData };
-    console.log('Translations loaded successfully:', Object.keys(translations));
-    applyLanguage(currentLang);
-    console.log('Applied language:', currentLang);
-    return currentLang;
-  } catch (e) {
-    console.error('Failed to load translations:', e);
-    // Fallback: translations remain empty but app doesn't crash
-  }
+  console.log('[i18n] Initializing with translations:', Object.keys(translations));
+  console.log('[i18n] IT keys:', Object.keys(translations.it).length);
+  console.log('[i18n] EN keys:', Object.keys(translations.en).length);
+  applyLanguage(currentLang);
+  console.log('[i18n] Applied language:', currentLang);
+  return currentLang;
 }
 
 export function t(key, vars = {}) {
