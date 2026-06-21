@@ -16,7 +16,10 @@ export async function initI18n() {
 
 export function t(key, vars = {}) {
   const lang = translations[currentLang] || translations.it;
+  console.log(`[t] key="${key}", currentLang="${currentLang}", lang keys:`, Object.keys(lang).slice(0, 3));
+
   let text = key.split('.').reduce((obj, k) => obj?.[k], lang) || key;
+  console.log(`[t] result="${text}"`);
 
   // Simple variable substitution: {varName} → value
   Object.entries(vars).forEach(([k, v]) => {
