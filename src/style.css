@@ -94,6 +94,7 @@ h1 {
   width: 36px;
   height: 36px;
   font-size: 18px;
+  color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
