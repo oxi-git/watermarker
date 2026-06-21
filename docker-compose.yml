@@ -1,0 +1,18 @@
+services:
+  build:
+    build: .
+    volumes:
+      # Sorgente (montato live, non copiato nell'immagine)
+      - .:/app
+      # Cache Cargo: evita di riscaricare i crate ad ogni build
+      - cargo_registry:/root/.cargo/registry
+      - cargo_git:/root/.cargo/git
+      # Cache compilazione Rust: build successive molto più veloci
+      - target_cache:/app/src-tauri/target
+    working_dir: /app
+    command: bash scripts/docker-build.sh
+
+volumes:
+  cargo_registry:
+  cargo_git:
+  target_cache:
