@@ -66,7 +66,7 @@ function updateLanguageButton() {
   if (!langBtn) return;
 
   const current = getLanguage();
-  langBtn.textContent = current === 'it' ? 'EN' : 'IT';
+  langBtn.textContent = current === 'it' ? '🇬🇧' : '🇮🇹';
   langBtn.title = `Switch to ${langNames[current === 'it' ? 'en' : 'it']}`;
 }
 
@@ -75,6 +75,7 @@ const files = [];       // [{file, name, img, thumbCanvas, thumbCtx}]
 let mode = 'empty';     // 'empty' | 'grid' | 'preview'
 let previewIdx = -1;
 let thumbTimer = null;
+let watermarkImage = null;  // PNG watermark image
 
 // ── File loading ───────────────────────────────────────────
 const dropzone = document.getElementById('dropzone');
@@ -87,6 +88,28 @@ dropzone.addEventListener('drop', e => {
 });
 document.getElementById('wmimg').addEventListener('change', e => {
   [...e.target.files].forEach(loadFile);
+  e.target.value = '';
+});
+
+document.getElementById('wmimage-png').addEventListener('change', e => {
+  if (e.target.files.length === 0) return;
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      watermarkImage = img;
+      document.getElementById('wmimage-info').textContent = `✓ ${file.name} (${img.naturalWidth}×${img.naturalHeight})`;
+      if (mode === 'preview') {
+        const canvas = document.getElementById('MainCanvas');
+        applyWatermarkToCanvas(files[previewIdx].img, canvas, canvas.getContext('2d'), 1);
+      } else if (mode === 'grid') {
+        redrawAllThumbs();
+      }
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
   e.target.value = '';
 });
 
@@ -253,14 +276,15 @@ window.navigatePreview = function (delta) {
 // ── Watermark ──────────────────────────────────────────────
 function getParams() {
   return {
-    lines:       ['wmline1','wmline2','wmline3'].map(id => document.getElementById(id).value).filter(l => l.trim()),
-    sizePct:     Number(document.getElementById('wmsize').value),
-    alpha:       Number(document.getElementById('wmalpha').value) / 100,
-    rotation:    Number(document.getElementById('wmrotation').value) * Math.PI / 180,
-    spacingXPct: Number(document.getElementById('wmspacingx').value),
-    spacingYPct: Number(document.getElementById('wmspacingy').value),
-    font:        document.getElementById('wmfont').value,
-    color:       document.getElementById('wmcolor').value,
+    lines:        ['wmline1','wmline2','wmline3'].map(id => document.getElementById(id).value).filter(l => l.trim()),
+    sizePct:      Number(document.getElementById('wmsize').value),
+    alpha:        Number(document.getElementById('wmalpha').value) / 100,
+    rotation:     Number(document.getElementById('wmrotation').value) * Math.PI / 180,
+    spacingXPct:  Number(document.getElementById('wmspacingx').value),
+    spacingYPct:  Number(document.getElementById('wmspacingy').value),
+    font:         document.getElementById('wmfont').value,
+    color:        document.getElementById('wmcolor').value,
+    imageSizePct: Number(document.getElementById('wmimage-size').value),
   };
 }
 
@@ -270,36 +294,68 @@ function applyWatermarkToCanvas(srcImg, canvas, ctx, scale) {
   ctx.drawImage(srcImg, 0, 0, W, H);
 
   const p = getParams();
-  if (!p.lines.length) return;
+  const hasText = p.lines.length > 0;
+  const hasImage = watermarkImage !== null;
+  if (!hasText && !hasImage) return;
 
-  const dim      = Math.sqrt(W * W + H * H);
-  const size     = (p.sizePct     / 100) * dim;
-  const spacingX = (p.spacingXPct / 100) * W;
-  const spacingY = (p.spacingYPct / 100) * H;
+  const dim = Math.sqrt(W * W + H * H);
 
   ctx.save();
   ctx.globalAlpha  = p.alpha;
-  ctx.font         = `bold ${size}px ${p.font}`;
-  ctx.fillStyle    = p.color;
-  ctx.textAlign    = 'center';
-  ctx.textBaseline = 'middle';
-
-  const lineHeight  = size * 1.4;
-  const blockHeight = p.lines.length * lineHeight;
-
   ctx.translate(W / 2, H / 2);
   ctx.rotate(p.rotation);
 
-  const cols = Math.ceil(dim / spacingX) + 2;
-  const rows = Math.ceil(dim / (blockHeight + spacingY)) + 2;
+  // Disegna immagine PNG se caricata
+  if (hasImage) {
+    const imgSize = (p.imageSizePct / 100) * dim;
+    const imgWidth = imgSize * (watermarkImage.naturalWidth / watermarkImage.naturalHeight);
+    const imgHeight = imgSize;
 
-  for (let row = -rows; row <= rows; row++) {
-    for (let col = -cols; col <= cols; col++) {
-      const x = col * spacingX;
-      const y = row * (blockHeight + spacingY);
-      p.lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
+    const spacingX = imgWidth * 1.3;
+    const spacingY = imgHeight * 1.3;
+
+    const cols = Math.ceil(dim / spacingX) + 2;
+    const rows = Math.ceil(dim / spacingY) + 2;
+
+    for (let row = -rows; row <= rows; row++) {
+      for (let col = -cols; col <= cols; col++) {
+        const x = col * spacingX - imgWidth / 2;
+        const y = row * spacingY - imgHeight / 2;
+        ctx.drawImage(watermarkImage, x, y, imgWidth, imgHeight);
+      }
     }
   }
+
+  // Disegna testo se presente
+  if (hasText) {
+    const size = (p.sizePct / 100) * dim;
+    ctx.font         = `bold ${size}px ${p.font}`;
+    ctx.fillStyle    = p.color;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+
+    const lineHeight  = size * 1.4;
+    const blockHeight = p.lines.length * lineHeight;
+
+    // Misura la larghezza effettiva delle linee di testo
+    const textWidth = Math.max(...p.lines.map(line => ctx.measureText(line).width));
+
+    // Spacing dinamico basato sulla grandezza effettiva del testo
+    const spacingX = textWidth * (1.2 + p.spacingXPct / 100);
+    const spacingY = blockHeight * (1.5 + p.spacingYPct / 150);
+
+    const cols = Math.ceil(dim / spacingX) + 2;
+    const rows = Math.ceil(dim / (blockHeight + spacingY)) + 2;
+
+    for (let row = -rows; row <= rows; row++) {
+      for (let col = -cols; col <= cols; col++) {
+        const x = col * spacingX;
+        const y = row * (blockHeight + spacingY);
+        p.lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
+      }
+    }
+  }
+
   ctx.restore();
 }
 
@@ -332,6 +388,7 @@ function syncLabels() {
   document.getElementById('wmrotationval').textContent = document.getElementById('wmrotation').value + '°';
   document.getElementById('wmspacingxval').textContent = document.getElementById('wmspacingx').value + '%';
   document.getElementById('wmspacingyval').textContent = document.getElementById('wmspacingy').value + '%';
+  document.getElementById('wmimageval').textContent    = document.getElementById('wmimage-size').value + '%';
 }
 
 // ── Download (native Tauri dialog) ─────────────────────────

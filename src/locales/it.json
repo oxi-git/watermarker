@@ -14,6 +14,9 @@
   "watermark.line3": "Linea 3",
   "watermark.line1Placeholder": "2024-01-15 · COPIA PER XYZ srl",
   "watermark.line2Placeholder": "ACQUISTO PRODOTTO ABC",
+  "watermark.imageTitle": "Immagine filigrana (PNG)",
+  "watermark.imageLoad": "Carica PNG",
+  "watermark.imageSize": "Dimensione",
 
   "style.title": "Stile",
   "style.font": "Font",

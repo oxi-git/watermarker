@@ -14,6 +14,9 @@
   "watermark.line3": "Line 3",
   "watermark.line1Placeholder": "2024-01-15 · COPY FOR XYZ Inc",
   "watermark.line2Placeholder": "PRODUCT ABC PURCHASE",
+  "watermark.imageTitle": "Image watermark (PNG)",
+  "watermark.imageLoad": "Load PNG",
+  "watermark.imageSize": "Size",
 
   "style.title": "Style",
   "style.font": "Font",
