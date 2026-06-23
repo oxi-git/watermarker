@@ -3,50 +3,52 @@
 
   # Watermarker
 
-  **Aggiungi filigrane ai tuoi documenti in pochi secondi.**  
-  App desktop leggera e professionale per proteggere immagini con watermark personalizzati. Interfaccia elegante con tema dark/light e glassmorphism macOS Tahoe.
+  **Add watermarks to your images in seconds.**  
+  Lightweight and professional desktop app to protect images with custom watermarks. Elegant interface with dark/light theme and macOS Tahoe glassmorphism design.
 
   [![Release](https://img.shields.io/github/v/release/oxi-git/watermarker?style=flat-square)](https://github.com/oxi-git/watermarker/releases)
   [![License](https://img.shields.io/github/license/oxi-git/watermarker?style=flat-square)](LICENSE)
-  [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat-square)](#installazione)
+  [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat-square)](#installation)
   [![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri-FFC131?style=flat-square&logo=tauri&logoColor=black)](https://tauri.app)
 
-  [**Download**](#installazione) · [Segnala un bug](https://github.com/oxi-git/watermarker/issues) · [Richiedi una feature](https://github.com/oxi-git/watermarker/issues)
+  [**Download**](#installation) · [Report a bug](https://github.com/oxi-git/watermarker/issues) · [Request a feature](https://github.com/oxi-git/watermarker/issues)
 
 </div>
 
 ---
 
-## Funzionalità
+## Features
 
-- 🖼️ **Watermark su immagini** — supporto PNG, JPEG, WebP
-- 🔤 **Testo personalizzato** — fino a 3 linee, font, dimensione, colore, opacità
-- 🎨 **Rotazione e spaziatura** — posizionamento preciso con percentuali responsive
-- 📁 **Elaborazione batch** — applica lo stesso watermark a decine di file simultaneamente
-- 👁️ **Anteprima in tempo reale** — vedi il risultato mentre modifichi i parametri
-- 🎯 **Griglia thumbnail** — visualizza tutte le immagini con anteprima watermark
-- 💾 **Esporta flessibile** — scarica singoli file o ZIP compresso
-- 🎭 **Tema dark/light** — interfaccia elegante con glassmorphism Tahoe
-- 🔒 **100% offline** — nessun dato lascia il tuo dispositivo
+- 🖼️ **Image watermarks** — support for PNG, JPEG, WebP
+- 🔤 **Custom text watermarks** — up to 3 lines, fonts, size, color, opacity
+- 🖼️ **Image watermarks (PNG)** — tessellated with dynamic spacing
+- 🎨 **Rotation and spacing** — precise positioning with responsive percentages
+- 📁 **Batch processing** — apply the same watermark to dozens of files simultaneously
+- 👁️ **Real-time preview** — see results as you modify parameters
+- 🎯 **Thumbnail grid** — view all images with watermark preview
+- 💾 **Flexible export** — download individual files or compressed ZIP
+- 🎭 **Dark/light theme** — elegant interface with macOS Tahoe glassmorphism
+- 🌍 **Multilingue** — Italian and English support
+- 🔒 **100% offline** — no data leaves your device
 
 ---
 
-## Installazione
+## Installation
 
-### Download diretto (consigliato)
+### Direct download (recommended)
 
-Scarica l'ultima versione dalla [pagina Releases](https://github.com/oxi-git/watermarker/releases):
+Download the latest version from the [Releases page](https://github.com/oxi-git/watermarker/releases):
 
-| Piattaforma | File |
+| Platform | File |
 |---|---|
 | macOS (Intel + Apple Silicon) | `Watermarker_x.x.x_universal.dmg` |
 | Windows | `Watermarker_x.x.x_x64-setup.exe` |
 | Linux (Debian/Ubuntu) | `watermarker_x.x.x_amd64.deb` |
 | Linux (AppImage) | `Watermarker_x.x.x_amd64.AppImage` |
 
-### macOS — primo avvio
+### macOS — First launch
 
-Se macOS blocca l'app (sviluppatore non verificato):
+If macOS blocks the app (unverified developer):
 
 ```bash
 xattr -cr /Applications/Watermarker.app
@@ -54,9 +56,9 @@ xattr -cr /Applications/Watermarker.app
 
 ---
 
-## Compilare dal sorgente
+## Building from source
 
-### Prerequisiti
+### Prerequisites
 
 - [Node.js](https://nodejs.org) ≥ 18
 - [Rust](https://rustup.rs) (stable toolchain)
@@ -65,67 +67,67 @@ xattr -cr /Applications/Watermarker.app
 ### Setup
 
 ```bash
-# Clona il repository
+# Clone the repository
 git clone https://github.com/oxi-git/watermarker.git
 cd watermarker
 
-# Installa le dipendenze
+# Install dependencies
 npm install
 
-# Avvia in modalità sviluppo
+# Start development mode
 npm run dev
 
-# Compila per la produzione
+# Build for production
 npm run build
 ```
 
 ---
 
-## Utilizzo
+## Usage
 
-1. **Apri** uno o più file (PDF o immagini) tramite drag & drop o il menu File
-2. **Configura** il watermark: testo, font, opacità, posizione
-3. **Anteprima** del risultato nel pannello di destra
-4. **Esporta** i file nella cartella di output
+1. **Open** one or more images via drag & drop or the file selector
+2. **Configure** the watermark: text and/or PNG, font, opacity, position
+3. **Preview** the result in the right panel
+4. **Export** the files individually or as a ZIP archive
 
 ---
 
-## Stack tecnico
+## Tech stack
 
-| Layer | Tecnologia |
+| Layer | Technology |
 |---|---|
-| Shell desktop | [Tauri 2](https://tauri.app) + Rust |
-| Frontend | HTML5, CSS3 (Glassmorphism Tahoe), JavaScript vanilla |
-| Canvas rendering | Web Canvas API (elaborazione immagini lato client) |
+| Desktop shell | [Tauri 2](https://tauri.app) + Rust |
+| Frontend | HTML5, CSS3 (Glassmorphism Tahoe), vanilla JavaScript |
+| Canvas rendering | Web Canvas API (client-side image processing) |
 | Build | Vite + npm |
 | Packaging | macOS (DMG universal), Windows (NSIS + MSI), Linux (AppImage + deb) |
 
 ---
 
-## Contribuire
+## Contributing
 
-Le contribuzioni sono benvenute! Per bug fix minori apri direttamente una Pull Request. Per nuove feature, apri prima una Issue per discuterne.
+Contributions are welcome! For minor bug fixes, open a Pull Request directly. For new features, open an Issue first to discuss it.
 
 ```bash
-# Crea un branch per la tua feature
-git checkout -b feat/nome-feature
+# Create a branch for your feature
+git checkout -b feat/feature-name
 
-# Committa le modifiche
-git commit -m "feat: descrizione"
+# Commit your changes
+git commit -m "feat: description"
 
-# Apri una Pull Request verso main
+# Open a Pull Request to main
 ```
 
-Per favore segui il [Conventional Commits](https://www.conventionalcommits.org) style.
+Please follow the [Conventional Commits](https://www.conventionalcommits.org) style.
 
 ---
 
-## Licenza
+## License
 
-Distribuito sotto licenza **MIT**. Vedi [`LICENSE`](LICENSE) per i dettagli.
+Distributed under the **MIT** license. See [`LICENSE`](LICENSE) for details.
 
 ---
 
 <div align="center">
-  <sub>Fatto con ♥ · <a href="../../issues">Feedback</a></sub>
+  <sub>Made with ♥ · <a href="../../issues">Feedback</a></sub>
 </div>
