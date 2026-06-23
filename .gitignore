@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Rust / Tauri
+src-tauri/target/
+
+# macOS
+.DS_Store
+
+# Env files
+.env
+.env.*
