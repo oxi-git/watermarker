@@ -166,8 +166,18 @@ function updateSidebar() {
 
     const info = document.createElement('div');
     info.className = 'file-info';
-    info.innerHTML = `<div class="file-name" title="${entry.name}">${entry.name}</div>
-                      <div class="file-size">${entry.img.naturalWidth}×${entry.img.naturalHeight}</div>`;
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'file-name';
+    nameDiv.textContent = entry.name;
+    nameDiv.title = entry.name;
+
+    const sizeDiv = document.createElement('div');
+    sizeDiv.className = 'file-size';
+    sizeDiv.textContent = `${entry.img.naturalWidth}×${entry.img.naturalHeight}`;
+
+    info.appendChild(nameDiv);
+    info.appendChild(sizeDiv);
 
     const rm = document.createElement('span');
     rm.className = 'file-remove';

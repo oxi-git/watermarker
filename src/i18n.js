@@ -18,7 +18,7 @@ export function t(key, vars = {}) {
 
   // Simple variable substitution: {varName} → value
   Object.entries(vars).forEach(([k, v]) => {
-    text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+    text = text.replace(`{${k}}`, String(v));
   });
 
   return text;
