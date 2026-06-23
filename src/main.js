@@ -96,7 +96,7 @@ dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-ove
 dropzone.addEventListener('drop', e => {
   e.preventDefault();
   dropzone.classList.remove('drag-over');
-  [...e.dataTransfer.files].filter(f => f.type.startsWith('image/')).forEach(loadFile);
+  [...e.dataTransfer.files].forEach(loadFile);
 });
 document.getElementById('wmimg').addEventListener('change', e => {
   [...e.target.files].forEach(loadFile);
@@ -173,8 +173,8 @@ function updateSidebar() {
 
   dropzone.classList.toggle('compact', files.length > 0);
   dropzone.innerHTML = files.length > 0
-    ? `<p style="color:#888;font-size:12px;">+ Aggiungi altre immagini</p>`
-    : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px">
+    ? `<p style="color:var(--text-secondary);font-size:12px;">+ Aggiungi altre immagini</p>`
+    : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px" aria-hidden="true">
          <rect x="3" y="3" width="18" height="18" rx="2"/>
          <circle cx="8.5" cy="8.5" r="1.5"/>
          <path d="M21 15l-5-5L5 21"/>
@@ -269,7 +269,7 @@ function buildGrid() {
   grid.innerHTML = '';
   files.forEach((entry, i) => {
     const cell = document.createElement('div');
-    cell.className = 'grid-cell' + (i === previewIdx && mode === 'preview' ? ' selected' : '');
+    cell.className = 'grid-cell';
     cell.onclick = () => openPreview(i);
     entry.thumbCanvas.className = 'grid-canvas';
     const label = document.createElement('div');
