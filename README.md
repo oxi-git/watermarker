@@ -6,7 +6,7 @@
   **Add watermarks to your images in seconds.**  
   Lightweight and professional desktop app to protect images with custom watermarks. Elegant interface with dark/light theme and macOS Tahoe glassmorphism design.
 
-  [![Release](https://badgen.net/github/release/oxi-git/watermarker)](https://github.com/oxi-git/watermarker/releases)
+  [![Release](https://img.shields.io/badge/release-v1.1.0-blue?style=flat-square)](https://github.com/oxi-git/watermarker/releases)
   [![License](https://img.shields.io/badge/license-GPL%203.0-green?style=flat-square)](LICENSE)
   [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat-square)](#installation)
   [![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri-FFC131?style=flat-square&logo=tauri&logoColor=black)](https://tauri.app)
