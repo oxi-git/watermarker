@@ -124,7 +124,7 @@ Please follow the [Conventional Commits](https://www.conventionalcommits.org) st
 
 ## License
 
-Distributed under the **MIT** license. See [`LICENSE`](LICENSE) for details.
+Distributed under the **GPL 3.0** license. See [`LICENSE`](LICENSE) for details.
 
 ---
 
