@@ -13,16 +13,17 @@
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
       <h1 data-i18n="app.title">Watermarker</h1>
       <div style="display: flex; gap: 4px;">
-        <button id="lang-toggle" class="theme-btn" title="Toggle language">🇮🇹</button>
-        <button id="theme-toggle" class="theme-btn" title="Toggle light/dark">
+        <button id="lang-toggle" class="theme-btn" title="Toggle language" aria-label="Switch to English">🇮🇹</button>
+        <button id="theme-toggle" class="theme-btn" title="Toggle light/dark" aria-label="Toggle light/dark mode">
           <span class="theme-icon">🌙</span>
         </button>
       </div>
     </div>
   </div>
 
-  <div id="dropzone" onclick="document.getElementById('wmimg').click()">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px">
+  <div id="dropzone" onclick="document.getElementById('wmimg').click()" role="button" tabindex="0" aria-label="Drop area: click or drag images to load">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px" aria-hidden="true">
+      <title>Image icon</title>
       <rect x="3" y="3" width="18" height="18" rx="2"/>
       <circle cx="8.5" cy="8.5" r="1.5"/>
       <path d="M21 15l-5-5L5 21"/>
@@ -134,16 +135,16 @@
   <div class="section">
     <div class="section-title" data-i18n="download.title">Scarica selezionato</div>
     <div class="btn-row">
-      <button class="btn btn-secondary" id="dlpng" onclick="downloadSingle('png')" disabled data-i18n="download.png">PNG</button>
-      <button class="btn btn-secondary" id="dljpg" onclick="downloadSingle('jpg')" disabled data-i18n="download.jpg">JPG</button>
+      <button class="btn btn-secondary" id="dlpng" onclick="downloadSingle('png')" disabled data-i18n="download.png" aria-label="Download selected image as PNG (requires image to be selected in preview)" title="Select an image in preview to enable">PNG</button>
+      <button class="btn btn-secondary" id="dljpg" onclick="downloadSingle('jpg')" disabled data-i18n="download.jpg" aria-label="Download selected image as JPG (requires image to be selected in preview)" title="Select an image in preview to enable">JPG</button>
     </div>
   </div>
 
   <div class="section">
     <div class="section-title" data-i18n="download.allTitle">Scarica tutti</div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="dlzippng" onclick="downloadZip('png')" disabled data-i18n="download.zipPng">ZIP PNG</button>
-      <button class="btn btn-primary" id="dlzipjpg" onclick="downloadZip('jpg')" disabled data-i18n="download.zipJpg">ZIP JPG</button>
+      <button class="btn btn-primary" id="dlzippng" onclick="downloadZip('png')" disabled data-i18n="download.zipPng" aria-label="Download all images as ZIP archive with PNG format" title="Load images to enable">ZIP PNG</button>
+      <button class="btn btn-primary" id="dlzipjpg" onclick="downloadZip('jpg')" disabled data-i18n="download.zipJpg" aria-label="Download all images as ZIP archive with JPG format" title="Load images to enable">ZIP JPG</button>
     </div>
     <div id="zip-progress">
       <div id="zip-bar-wrap"><div id="zip-bar"></div></div>

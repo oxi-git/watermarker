@@ -3,6 +3,18 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import { initI18n, setLanguage, getLanguage, t, getWord, langs, langNames } from './i18n';
 
+// ── Toast Notifications ────────────────────────────────────────
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = 'slideUp 0.3s ease reverse';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 // ── Initialization ─────────────────────────────────────────
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeApp);
@@ -114,9 +126,24 @@ document.getElementById('wmimage-png').addEventListener('change', e => {
 });
 
 function loadFile(file) {
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+  if (file.size > MAX_FILE_SIZE) {
+    showToast(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB (max 10MB)`, 'error');
+    return;
+  }
+
+  if (!SUPPORTED_TYPES.includes(file.type)) {
+    showToast(`Unsupported format: ${file.type || 'unknown'}. Use JPG, PNG, or WebP.`, 'error');
+    return;
+  }
+
   const reader = new FileReader();
+  reader.onerror = () => showToast('Error reading file', 'error');
   reader.onload = ev => {
     const img = new Image();
+    img.onerror = () => showToast('Invalid image file', 'error');
     img.onload = () => {
       const thumbCanvas = document.createElement('canvas');
       files.push({ file, name: file.name, img, thumbCanvas, thumbCtx: thumbCanvas.getContext('2d') });
@@ -157,15 +184,20 @@ function updateSidebar() {
 
   listEl.innerHTML = '';
   files.forEach((entry, i) => {
-    const item = document.createElement('div');
+    const item = document.createElement('button');
     item.className = 'file-item' + (i === previewIdx && mode === 'preview' ? ' selected' : '');
+    item.type = 'button';
+    item.aria-label = `Open ${entry.name} (${entry.img.naturalWidth}×${entry.img.naturalHeight})`;
+    item.onclick = () => openPreview(i);
 
     const thumb = document.createElement('img');
     thumb.className = 'file-thumb';
     thumb.src = entry.img.src;
+    thumb.alt = '';
 
     const info = document.createElement('div');
     info.className = 'file-info';
+    info.style.pointerEvents = 'none';
 
     const nameDiv = document.createElement('div');
     nameDiv.className = 'file-name';
@@ -179,15 +211,17 @@ function updateSidebar() {
     info.appendChild(nameDiv);
     info.appendChild(sizeDiv);
 
-    const rm = document.createElement('span');
+    const rm = document.createElement('button');
     rm.className = 'file-remove';
+    rm.type = 'button';
     rm.textContent = '×';
+    rm.aria-label = `Remove ${entry.name}`;
+    rm.style.pointerEvents = 'auto';
     rm.onclick = e => { e.stopPropagation(); removeFile(i); };
 
     item.appendChild(thumb);
     item.appendChild(info);
     item.appendChild(rm);
-    item.onclick = () => openPreview(i);
     listEl.appendChild(item);
   });
 
@@ -235,7 +269,7 @@ function buildGrid() {
   grid.innerHTML = '';
   files.forEach((entry, i) => {
     const cell = document.createElement('div');
-    cell.className = 'grid-cell';
+    cell.className = 'grid-cell' + (i === previewIdx && mode === 'preview' ? ' selected' : '');
     cell.onclick = () => openPreview(i);
     entry.thumbCanvas.className = 'grid-canvas';
     const label = document.createElement('div');
@@ -276,6 +310,12 @@ function openPreview(idx) {
   const canvas = document.getElementById('MainCanvas');
   applyWatermarkToCanvas(entry.img, canvas, canvas.getContext('2d'), 1);
   updateSidebar();
+
+  const gridCells = document.querySelectorAll('.grid-cell');
+  gridCells.forEach((cell, i) => {
+    if (i === idx) cell.classList.add('selected');
+    else cell.classList.remove('selected');
+  });
 }
 
 window.navigatePreview = function (delta) {
@@ -402,8 +442,19 @@ function syncLabels() {
 }
 
 // ── Download (native Tauri dialog) ─────────────────────────
+function hasWatermark() {
+  const p = getParams();
+  return p.lines.length > 0 || watermarkImage !== null;
+}
+
 window.downloadSingle = async function (format) {
   if (previewIdx < 0) return;
+
+  if (!hasWatermark()) {
+    showToast('No watermark configured. Add text or PNG watermark before downloading.', 'warning');
+    return;
+  }
+
   const canvas = document.getElementById('MainCanvas');
   const entry  = files[previewIdx];
   const stem   = entry.name.replace(/\.[^.]+$/, '');
@@ -420,10 +471,16 @@ window.downloadSingle = async function (format) {
     : canvas.toDataURL('image/jpeg', 0.95);
   const bytes = Uint8Array.from(atob(dataUrl.split(',')[1]), c => c.charCodeAt(0));
   await writeFile(filePath, bytes);
+  showToast('Image downloaded successfully', 'success');
 };
 
 window.downloadZip = async function (format) {
   if (!files.length) return;
+
+  if (!hasWatermark()) {
+    showToast('No watermark configured. Add text or PNG watermark before downloading.', 'warning');
+    return;
+  }
 
   const btnPng = document.getElementById('dlzippng');
   const btnJpg = document.getElementById('dlzipjpg');
@@ -469,6 +526,7 @@ window.downloadZip = async function (format) {
   prog.style.display  = 'none';
   bar.style.width     = '0%';
   btnPng.disabled = btnJpg.disabled = false;
+  showToast(`ZIP with ${files.length} files downloaded successfully`, 'success');
 };
 
 syncLabels();
