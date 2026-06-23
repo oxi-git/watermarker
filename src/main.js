@@ -187,7 +187,7 @@ function updateSidebar() {
     const item = document.createElement('button');
     item.className = 'file-item' + (i === previewIdx && mode === 'preview' ? ' selected' : '');
     item.type = 'button';
-    item.aria-label = `Open ${entry.name} (${entry.img.naturalWidth}×${entry.img.naturalHeight})`;
+    item.ariaLabel = `Open ${entry.name} (${entry.img.naturalWidth}×${entry.img.naturalHeight})`;
     item.onclick = () => openPreview(i);
 
     const thumb = document.createElement('img');
@@ -215,7 +215,7 @@ function updateSidebar() {
     rm.className = 'file-remove';
     rm.type = 'button';
     rm.textContent = '×';
-    rm.aria-label = `Remove ${entry.name}`;
+    rm.ariaLabel = `Remove ${entry.name}`;
     rm.style.pointerEvents = 'auto';
     rm.onclick = e => { e.stopPropagation(); removeFile(i); };
 
