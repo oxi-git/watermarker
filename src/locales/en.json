@@ -38,8 +38,8 @@
   "layout.spacingY": "Vertical spacing",
   "layout.spacingYUnit": "% height",
 
-  "download.title": "Download selected",
-  "download.allTitle": "Download all",
+  "download.title": "Save selected",
+  "download.allTitle": "Save all",
   "download.png": "PNG",
   "download.jpg": "JPG",
   "download.zipPng": "ZIP PNG",
