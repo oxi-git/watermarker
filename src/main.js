@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import { initI18n, setLanguage, getLanguage, t, langNames } from './i18n';
+import { buildPdf, layoutPages } from './pdf';
 
 // ── Toast Notifications ────────────────────────────────────────
 function showToast(message, type = 'info') {
@@ -235,6 +236,7 @@ function updateSidebar() {
   document.getElementById('dljpg').disabled    = !hasSel;
   document.getElementById('dlzippng').disabled = files.length === 0;
   document.getElementById('dlzipjpg').disabled = files.length === 0;
+  document.getElementById('dlpdf').disabled    = files.length === 0;
 }
 
 function removeFile(idx) {
@@ -446,6 +448,7 @@ document.getElementById('dlpng').addEventListener('click', () => window.download
 document.getElementById('dljpg').addEventListener('click', () => window.downloadSingle('jpg'));
 document.getElementById('dlzippng').addEventListener('click', () => window.downloadZip('png'));
 document.getElementById('dlzipjpg').addEventListener('click', () => window.downloadZip('jpg'));
+document.getElementById('dlpdf').addEventListener('click', () => window.downloadPdf());
 document.getElementById('btn-grid').addEventListener('click', () => window.showGridView());
 document.getElementById('btn-prev').addEventListener('click', () => window.navigatePreview(-1));
 document.getElementById('btn-next').addEventListener('click', () => window.navigatePreview(1));
@@ -491,6 +494,46 @@ function errorText(err) {
   return err instanceof Error ? err.message : String(err);
 }
 
+const SAVE_BUTTON_IDS = ['dlpng', 'dljpg', 'dlzippng', 'dlzipjpg', 'dlpdf'];
+
+function setSaving(busy) {
+  SAVE_BUTTON_IDS.forEach(id => {
+    document.getElementById(id).disabled = busy;
+  });
+}
+
+// Full-resolution watermarked JPEG on white, ready to embed in a PDF.
+async function renderJpegForPdf(entry) {
+  const img = entry.img;
+  const MAX_EDGE = 2200;
+  const scale = Math.min(1, MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  applyWatermarkToCanvas(img, canvas, ctx, scale);
+
+  // JPEG has no alpha channel: put transparent images on white like a scanner would.
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(
+      b => b ? resolve(b) : reject(new Error('Image encoding failed')),
+      'image/jpeg',
+      0.92
+    );
+  });
+
+  return {
+    bytes: new Uint8Array(await blob.arrayBuffer()),
+    width: canvas.width,
+    height: canvas.height,
+  };
+}
+
 window.downloadSingle = async function (format) {
   if (previewIdx < 0) return;
 
@@ -527,8 +570,6 @@ window.downloadZip = async function (format) {
     return;
   }
 
-  const btnPng = document.getElementById('dlzippng');
-  const btnJpg = document.getElementById('dlzipjpg');
   const prog   = document.getElementById('zip-progress');
   const bar    = document.getElementById('zip-bar');
   const lbl    = document.getElementById('zip-label');
@@ -547,7 +588,7 @@ window.downloadZip = async function (format) {
   }
   if (!filePath) return;
 
-  btnPng.disabled = btnJpg.disabled = true;
+  setSaving(true);
   prog.style.display = '';
 
   const zip = new JSZip();
@@ -579,7 +620,66 @@ window.downloadZip = async function (format) {
   } finally {
     prog.style.display = 'none';
     bar.style.width = '0%';
-    btnPng.disabled = btnJpg.disabled = files.length === 0;
+    updateSidebar();
+  }
+};
+
+window.downloadPdf = async function () {
+  if (!files.length) return;
+
+  if (!hasWatermark()) {
+    showToast(t('download.noWatermark'), 'warning');
+    return;
+  }
+
+  const prog = document.getElementById('zip-progress');
+  const bar  = document.getElementById('zip-bar');
+  const lbl  = document.getElementById('zip-label');
+
+  let filePath;
+  try {
+    filePath = await save({
+      defaultPath: `watermarked_${files.length}_images_a4.pdf`,
+      filters: [{ name: 'PDF Document', extensions: ['pdf'] }],
+    });
+  } catch (err) {
+    console.error(err);
+    showToast(`${t('download.error')}: ${errorText(err)}`, 'error');
+    return;
+  }
+  if (!filePath) return;
+
+  setSaving(true);
+  prog.style.display = '';
+  bar.style.width = '0%';
+
+  try {
+    const images = [];
+    for (let i = 0; i < files.length; i++) {
+      lbl.textContent = t('download.processing', { current: i + 1, total: files.length, name: files[i].name });
+      bar.style.width = ((i / files.length) * 85).toFixed(1) + '%';
+      await new Promise(r => setTimeout(r, 0));
+      images.push(await renderJpegForPdf(files[i]));
+    }
+
+    lbl.textContent = t('download.creatingPdf');
+    bar.style.width = '90%';
+    await new Promise(r => setTimeout(r, 0));
+
+    // One image after another in a single column, like a scanned document.
+    const pages = layoutPages(images);
+    const pdfBytes = buildPdf(pages);
+
+    bar.style.width = '100%';
+    await writeFile(filePath, pdfBytes);
+    showToast(t('download.pdfSaved', { count: images.length, pages: pages.length }), 'success');
+  } catch (err) {
+    console.error(err);
+    showToast(`${t('download.error')}: ${errorText(err)}`, 'error');
+  } finally {
+    prog.style.display = 'none';
+    bar.style.width = '0%';
+    updateSidebar();
   }
 };
 
