@@ -24,12 +24,6 @@ export function t(key, vars = {}) {
   return text;
 }
 
-// Helper: get word or phrase in current language
-export function getWord(key) {
-  const lang = translations[currentLang] || translations.it;
-  return key.split('.').reduce((obj, k) => obj?.[k], lang) || key;
-}
-
 export function setLanguage(lang) {
   if (!translations[lang]) return;
   currentLang = lang;
@@ -55,5 +49,4 @@ function applyLanguage(lang) {
   });
 }
 
-export const langs = ['it', 'en'];
 export const langNames = { it: 'Italiano', en: 'English' };

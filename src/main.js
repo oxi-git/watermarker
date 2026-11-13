@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
-import { initI18n, setLanguage, getLanguage, t, getWord, langs, langNames } from './i18n';
+import { initI18n, setLanguage, getLanguage, t, langNames } from './i18n';
 
 // ── Toast Notifications ────────────────────────────────────────
 function showToast(message, type = 'info') {
@@ -91,6 +91,8 @@ let watermarkImage = null;  // PNG watermark image
 
 // ── File loading ───────────────────────────────────────────
 const dropzone = document.getElementById('dropzone');
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
 dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
 dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
 dropzone.addEventListener('drop', e => {
@@ -113,8 +115,7 @@ document.getElementById('wmimage-png').addEventListener('change', e => {
       watermarkImage = img;
       document.getElementById('wmimage-info').textContent = `✓ ${file.name} (${img.naturalWidth}×${img.naturalHeight})`;
       if (mode === 'preview') {
-        const canvas = document.getElementById('MainCanvas');
-        applyWatermarkToCanvas(files[previewIdx].img, canvas, canvas.getContext('2d'), 1);
+        drawPreview(files[previewIdx]);
       } else if (mode === 'grid') {
         redrawAllThumbs();
       }
@@ -130,20 +131,20 @@ function loadFile(file) {
   const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
   if (file.size > MAX_FILE_SIZE) {
-    showToast(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB (max 10MB)`, 'error');
+    showToast(t('error.fileTooLarge', { size: (file.size / 1024 / 1024).toFixed(1) }), 'error');
     return;
   }
 
   if (!SUPPORTED_TYPES.includes(file.type)) {
-    showToast(`Unsupported format: ${file.type || 'unknown'}. Use JPG, PNG, or WebP.`, 'error');
+    showToast(t('error.unsupportedFormat', { type: file.type || '?' }), 'error');
     return;
   }
 
   const reader = new FileReader();
-  reader.onerror = () => showToast('Error reading file', 'error');
+  reader.onerror = () => showToast(t('error.readFile'), 'error');
   reader.onload = ev => {
     const img = new Image();
-    img.onerror = () => showToast('Invalid image file', 'error');
+    img.onerror = () => showToast(t('error.invalidImage'), 'error');
     img.onload = () => {
       const thumbCanvas = document.createElement('canvas');
       files.push({ file, name: file.name, img, thumbCanvas, thumbCtx: thumbCanvas.getContext('2d') });
@@ -160,7 +161,7 @@ function loadFile(file) {
 function updateFileListCount() {
   const countEl = document.getElementById('filelist-count');
   const count = files.length;
-  const text = count === 1 ? getWord('app.image_one') : `${count} ${getWord('app.image_many')}`;
+  const text = count === 1 ? t('app.image_one') : `${count} ${t('app.image_many')}`;
   countEl.textContent = text;
 }
 
@@ -173,21 +174,21 @@ function updateSidebar() {
 
   dropzone.classList.toggle('compact', files.length > 0);
   dropzone.innerHTML = files.length > 0
-    ? `<p style="color:var(--text-secondary);font-size:12px;">+ Aggiungi altre immagini</p>`
+    ? `<p data-i18n="app.addMore">${t('app.addMore')}</p>`
     : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px" aria-hidden="true">
          <rect x="3" y="3" width="18" height="18" rx="2"/>
          <circle cx="8.5" cy="8.5" r="1.5"/>
          <path d="M21 15l-5-5L5 21"/>
        </svg>
-       <p>Clicca o trascina le immagini</p>
-       <p class="hint">JPG · PNG · WEBP · più file contemporaneamente</p>`;
+       <p data-i18n="app.dragDrop">${t('app.dragDrop')}</p>
+       <p class="hint" data-i18n="app.formats">${t('app.formats')}</p>`;
 
   listEl.innerHTML = '';
   files.forEach((entry, i) => {
     const item = document.createElement('button');
     item.className = 'file-item' + (i === previewIdx && mode === 'preview' ? ' selected' : '');
     item.type = 'button';
-    item.ariaLabel = `Open ${entry.name} (${entry.img.naturalWidth}×${entry.img.naturalHeight})`;
+    item.setAttribute('aria-label', `Open ${entry.name} (${entry.img.naturalWidth}×${entry.img.naturalHeight})`);
     item.onclick = () => openPreview(i);
 
     const thumb = document.createElement('img');
@@ -215,7 +216,7 @@ function updateSidebar() {
     rm.className = 'file-remove';
     rm.type = 'button';
     rm.textContent = '×';
-    rm.ariaLabel = `Remove ${entry.name}`;
+    rm.setAttribute('aria-label', `Remove ${entry.name}`);
     rm.style.pointerEvents = 'auto';
     rm.onclick = e => { e.stopPropagation(); removeFile(i); };
 
@@ -234,11 +235,11 @@ function updateSidebar() {
 
 function removeFile(idx) {
   files.splice(idx, 1);
+  if (idx < previewIdx) previewIdx--;
   if (files.length === 0) { clearAll(); return; }
   if (previewIdx >= files.length) previewIdx = files.length - 1;
   if (mode === 'preview') openPreview(previewIdx);
   else showGridView();
-  updateSidebar();
 }
 
 window.clearAll = function () {
@@ -264,28 +265,8 @@ window.showGridView = function () {
   updateSidebar();
 };
 
-function buildGrid() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  files.forEach((entry, i) => {
-    const cell = document.createElement('div');
-    cell.className = 'grid-cell';
-    cell.onclick = () => openPreview(i);
-    entry.thumbCanvas.className = 'grid-canvas';
-    const label = document.createElement('div');
-    label.className = 'cell-label';
-    label.textContent = entry.name;
-    cell.appendChild(entry.thumbCanvas);
-    cell.appendChild(label);
-    grid.appendChild(cell);
-  });
-  redrawAllThumbs();
-}
-
-function addThumbToGrid(i) {
-  const entry = files[i];
-  const grid  = document.getElementById('grid');
-  const cell  = document.createElement('div');
+function makeCell(entry, i) {
+  const cell = document.createElement('div');
   cell.className = 'grid-cell';
   cell.onclick = () => openPreview(i);
   entry.thumbCanvas.className = 'grid-canvas';
@@ -294,7 +275,19 @@ function addThumbToGrid(i) {
   label.textContent = entry.name;
   cell.appendChild(entry.thumbCanvas);
   cell.appendChild(label);
-  grid.appendChild(cell);
+  return cell;
+}
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  files.forEach((entry, i) => grid.appendChild(makeCell(entry, i)));
+  redrawAllThumbs();
+}
+
+function addThumbToGrid(i) {
+  const entry = files[i];
+  document.getElementById('grid').appendChild(makeCell(entry, i));
   drawThumb(entry);
 }
 
@@ -307,8 +300,7 @@ function openPreview(idx) {
   document.getElementById('preview-counter').textContent  = `${idx + 1} / ${files.length}`;
   document.getElementById('btn-prev').disabled = idx === 0;
   document.getElementById('btn-next').disabled = idx === files.length - 1;
-  const canvas = document.getElementById('MainCanvas');
-  applyWatermarkToCanvas(entry.img, canvas, canvas.getContext('2d'), 1);
+  drawPreview(entry);
   updateSidebar();
 
   const gridCells = document.querySelectorAll('.grid-cell');
@@ -322,6 +314,30 @@ window.navigatePreview = function (delta) {
   const next = previewIdx + delta;
   if (next >= 0 && next < files.length) openPreview(next);
 };
+
+// ── Preview canvas ─────────────────────────────────────────
+let previewFrame = null;
+
+function previewScale(img) {
+  const wrap = document.getElementById('preview-canvas-wrap');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const maxW = Math.max(wrap.clientWidth - 40, 200);
+  const maxH = Math.max(wrap.clientHeight - 40, 200);
+  return Math.min(Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight) * dpr, 1);
+}
+
+function drawPreview(entry) {
+  const canvas = document.getElementById('MainCanvas');
+  applyWatermarkToCanvas(entry.img, canvas, canvas.getContext('2d'), previewScale(entry.img));
+}
+
+function schedulePreviewRedraw() {
+  if (previewFrame !== null || mode !== 'preview' || previewIdx < 0) return;
+  previewFrame = requestAnimationFrame(() => {
+    previewFrame = null;
+    if (mode === 'preview' && previewIdx >= 0) drawPreview(files[previewIdx]);
+  });
+}
 
 // ── Watermark ──────────────────────────────────────────────
 function getParams() {
@@ -420,13 +436,10 @@ function redrawAllThumbs() {
 }
 
 // ── Settings sync ──────────────────────────────────────────
-document.querySelectorAll('input, select').forEach(el => {
+document.querySelectorAll('#sidebar input:not([type="file"]), #sidebar select').forEach(el => {
   el.addEventListener('input', () => {
     syncLabels();
-    if (mode === 'preview') {
-      const canvas = document.getElementById('MainCanvas');
-      applyWatermarkToCanvas(files[previewIdx].img, canvas, canvas.getContext('2d'), 1);
-    }
+    schedulePreviewRedraw();
     clearTimeout(thumbTimer);
     thumbTimer = setTimeout(redrawAllThumbs, 120);
   });
@@ -447,18 +460,29 @@ function hasWatermark() {
   return p.lines.length > 0 || watermarkImage !== null;
 }
 
+function renderBlob(srcImg, format, scale = 1) {
+  const canvas = document.createElement('canvas');
+  applyWatermarkToCanvas(srcImg, canvas, canvas.getContext('2d'), scale);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      blob => blob ? resolve(blob) : reject(new Error('Image encoding failed')),
+      format === 'png' ? 'image/png' : 'image/jpeg',
+      0.95
+    );
+  });
+}
+
 window.downloadSingle = async function (format) {
   if (previewIdx < 0) return;
 
   if (!hasWatermark()) {
-    showToast('No watermark configured. Add text or PNG watermark before downloading.', 'warning');
+    showToast(t('download.noWatermark'), 'warning');
     return;
   }
 
-  const canvas = document.getElementById('MainCanvas');
-  const entry  = files[previewIdx];
-  const stem   = entry.name.replace(/\.[^.]+$/, '');
-  const ext    = format === 'png' ? 'png' : 'jpg';
+  const entry = files[previewIdx];
+  const stem  = entry.name.replace(/\.[^.]+$/, '');
+  const ext   = format === 'png' ? 'png' : 'jpg';
 
   const filePath = await save({
     defaultPath: `${stem}_watermark.${ext}`,
@@ -466,19 +490,21 @@ window.downloadSingle = async function (format) {
   });
   if (!filePath) return;
 
-  const dataUrl = format === 'png'
-    ? canvas.toDataURL('image/png')
-    : canvas.toDataURL('image/jpeg', 0.95);
-  const bytes = Uint8Array.from(atob(dataUrl.split(',')[1]), c => c.charCodeAt(0));
-  await writeFile(filePath, bytes);
-  showToast('Image downloaded successfully', 'success');
+  try {
+    const blob = await renderBlob(entry.img, format);
+    await writeFile(filePath, new Uint8Array(await blob.arrayBuffer()));
+    showToast(t('download.saved'), 'success');
+  } catch (err) {
+    console.error(err);
+    showToast(t('download.error'), 'error');
+  }
 };
 
 window.downloadZip = async function (format) {
   if (!files.length) return;
 
   if (!hasWatermark()) {
-    showToast('No watermark configured. Add text or PNG watermark before downloading.', 'warning');
+    showToast(t('download.noWatermark'), 'warning');
     return;
   }
 
@@ -498,35 +524,38 @@ window.downloadZip = async function (format) {
   btnPng.disabled = btnJpg.disabled = true;
   prog.style.display = '';
 
-  const zip    = new JSZip();
-  const canvas = document.createElement('canvas');
-  const ctx    = canvas.getContext('2d');
-  const ext    = format === 'png' ? 'png' : 'jpg';
+  const zip = new JSZip();
+  const ext = format === 'png' ? 'png' : 'jpg';
 
-  for (let i = 0; i < files.length; i++) {
-    lbl.textContent = t('download.processing', { current: i + 1, total: files.length, name: files[i].name });
-    bar.style.width = (i / files.length * 100) + '%';
-    await new Promise(r => setTimeout(r, 0));
+  try {
+    for (let i = 0; i < files.length; i++) {
+      lbl.textContent = t('download.processing', { current: i + 1, total: files.length, name: files[i].name });
+      bar.style.width = (i / files.length * 100) + '%';
+      await new Promise(r => setTimeout(r, 0));
 
-    applyWatermarkToCanvas(files[i].img, canvas, ctx, 1);
-    const b64  = (format === 'png' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.95)).split(',')[1];
-    const stem = files[i].name.replace(/\.[^.]+$/, '');
-    zip.file(`${stem}_watermark.${ext}`, b64, { base64: true });
+      const blob = await renderBlob(files[i].img, format);
+      const stem = files[i].name.replace(/\.[^.]+$/, '');
+      zip.file(`${stem}_watermark.${ext}`, blob);
+    }
+
+    bar.style.width = '100%';
+    lbl.textContent = t('download.creating');
+
+    const zipBytes = await zip.generateAsync({ type: 'uint8array' }, meta => {
+      bar.style.width = meta.percent.toFixed(0) + '%';
+    });
+
+    await writeFile(filePath, zipBytes);
+    showToast(t('download.zipSaved', { count: files.length }), 'success');
+  } catch (err) {
+    console.error(err);
+    showToast(t('download.error'), 'error');
+  } finally {
+    prog.style.display = 'none';
+    bar.style.width = '0%';
+    btnPng.disabled = btnJpg.disabled = files.length === 0;
   }
-
-  bar.style.width = '100%';
-  lbl.textContent = t('download.creating');
-
-  const zipBytes = await zip.generateAsync({ type: 'uint8array' }, meta => {
-    bar.style.width = meta.percent.toFixed(0) + '%';
-  });
-
-  await writeFile(filePath, zipBytes);
-
-  prog.style.display  = 'none';
-  bar.style.width     = '0%';
-  btnPng.disabled = btnJpg.disabled = false;
-  showToast(`ZIP with ${files.length} files downloaded successfully`, 'success');
 };
 
 syncLabels();
+updateFileListCount();

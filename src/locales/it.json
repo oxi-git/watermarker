@@ -8,6 +8,11 @@
   "app.removeAll": "Rimuovi tutto",
   "app.selectImage": "Seleziona un'immagine per iniziare",
 
+  "error.fileTooLarge": "File troppo grande: {size}MB (max 10MB)",
+  "error.unsupportedFormat": "Formato non supportato: {type}. Usa JPG, PNG o WebP.",
+  "error.readFile": "Errore di lettura del file",
+  "error.invalidImage": "File immagine non valido",
+
   "watermark.title": "Testo filigrana",
   "watermark.line1": "Linea 1",
   "watermark.line2": "Linea 2",
@@ -41,6 +46,10 @@
   "download.zipJpg": "ZIP JPG",
   "download.processing": "Elaborazione {current} / {total}: {name}",
   "download.creating": "Creazione ZIP…",
+  "download.noWatermark": "Nessuna filigrana impostata. Aggiungi testo o un PNG prima di scaricare.",
+  "download.saved": "Immagine salvata",
+  "download.zipSaved": "ZIP con {count} file salvato",
+  "download.error": "Errore durante il salvataggio",
   "download.back": "← Griglia",
   "download.prev": "‹ Prec",
   "download.next": "Succ ›",

@@ -8,6 +8,11 @@
   "app.removeAll": "Remove all",
   "app.selectImage": "Select an image to start",
 
+  "error.fileTooLarge": "File too large: {size}MB (max 10MB)",
+  "error.unsupportedFormat": "Unsupported format: {type}. Use JPG, PNG, or WebP.",
+  "error.readFile": "Error reading file",
+  "error.invalidImage": "Invalid image file",
+
   "watermark.title": "Watermark text",
   "watermark.line1": "Line 1",
   "watermark.line2": "Line 2",
@@ -41,6 +46,10 @@
   "download.zipJpg": "ZIP JPG",
   "download.processing": "Processing {current} / {total}: {name}",
   "download.creating": "Creating ZIP…",
+  "download.noWatermark": "No watermark configured. Add text or PNG watermark before downloading.",
+  "download.saved": "Image downloaded successfully",
+  "download.zipSaved": "ZIP with {count} files downloaded successfully",
+  "download.error": "Error while saving",
   "download.back": "← Grid",
   "download.prev": "‹ Prev",
   "download.next": "Next ›",
