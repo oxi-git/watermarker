@@ -91,6 +91,10 @@ let watermarkImage = null;  // PNG watermark image
 
 // ── File loading ───────────────────────────────────────────
 const dropzone = document.getElementById('dropzone');
+dropzone.addEventListener('click', () => document.getElementById('wmimg').click());
+dropzone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('wmimg').click(); }
+});
 window.addEventListener('dragover', e => e.preventDefault());
 window.addEventListener('drop', e => e.preventDefault());
 dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
@@ -435,6 +439,17 @@ function redrawAllThumbs() {
   files.forEach(drawThumb);
 }
 
+// ── Button wiring (CSP-safe: no inline handlers) ───────────
+document.getElementById('filelist-clear').addEventListener('click', () => window.clearAll());
+document.getElementById('load-watermark').addEventListener('click', () => document.getElementById('wmimage-png').click());
+document.getElementById('dlpng').addEventListener('click', () => window.downloadSingle('png'));
+document.getElementById('dljpg').addEventListener('click', () => window.downloadSingle('jpg'));
+document.getElementById('dlzippng').addEventListener('click', () => window.downloadZip('png'));
+document.getElementById('dlzipjpg').addEventListener('click', () => window.downloadZip('jpg'));
+document.getElementById('btn-grid').addEventListener('click', () => window.showGridView());
+document.getElementById('btn-prev').addEventListener('click', () => window.navigatePreview(-1));
+document.getElementById('btn-next').addEventListener('click', () => window.navigatePreview(1));
+
 // ── Settings sync ──────────────────────────────────────────
 document.querySelectorAll('#sidebar input:not([type="file"]), #sidebar select').forEach(el => {
   el.addEventListener('input', () => {
@@ -472,6 +487,10 @@ function renderBlob(srcImg, format, scale = 1) {
   });
 }
 
+function errorText(err) {
+  return err instanceof Error ? err.message : String(err);
+}
+
 window.downloadSingle = async function (format) {
   if (previewIdx < 0) return;
 
@@ -484,19 +503,19 @@ window.downloadSingle = async function (format) {
   const stem  = entry.name.replace(/\.[^.]+$/, '');
   const ext   = format === 'png' ? 'png' : 'jpg';
 
-  const filePath = await save({
-    defaultPath: `${stem}_watermark.${ext}`,
-    filters: [{ name: format === 'png' ? 'PNG Image' : 'JPEG Image', extensions: [ext] }],
-  });
-  if (!filePath) return;
-
   try {
+    const filePath = await save({
+      defaultPath: `${stem}_watermark.${ext}`,
+      filters: [{ name: format === 'png' ? 'PNG Image' : 'JPEG Image', extensions: [ext] }],
+    });
+    if (!filePath) return;
+
     const blob = await renderBlob(entry.img, format);
     await writeFile(filePath, new Uint8Array(await blob.arrayBuffer()));
     showToast(t('download.saved'), 'success');
   } catch (err) {
     console.error(err);
-    showToast(t('download.error'), 'error');
+    showToast(`${t('download.error')}: ${errorText(err)}`, 'error');
   }
 };
 
@@ -514,11 +533,18 @@ window.downloadZip = async function (format) {
   const bar    = document.getElementById('zip-bar');
   const lbl    = document.getElementById('zip-label');
 
-  // Ask where to save before processing (better UX)
-  const filePath = await save({
-    defaultPath: `watermarked_${files.length}_files.zip`,
-    filters: [{ name: 'ZIP Archive', extensions: ['zip'] }],
-  });
+  let filePath;
+  try {
+    // Ask where to save before processing (better UX)
+    filePath = await save({
+      defaultPath: `watermarked_${files.length}_files.zip`,
+      filters: [{ name: 'ZIP Archive', extensions: ['zip'] }],
+    });
+  } catch (err) {
+    console.error(err);
+    showToast(`${t('download.error')}: ${errorText(err)}`, 'error');
+    return;
+  }
   if (!filePath) return;
 
   btnPng.disabled = btnJpg.disabled = true;
@@ -549,7 +575,7 @@ window.downloadZip = async function (format) {
     showToast(t('download.zipSaved', { count: files.length }), 'success');
   } catch (err) {
     console.error(err);
-    showToast(t('download.error'), 'error');
+    showToast(`${t('download.error')}: ${errorText(err)}`, 'error');
   } finally {
     prog.style.display = 'none';
     bar.style.width = '0%';
